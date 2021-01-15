@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "commonjs",
+    "declaration": true,
+    "lib": ["es2019"],
+    "strict": true,
+    "rootDir": "src",
+    "outDir": "lib",
+    "importHelpers": false,
+    "resolveJsonModule": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noEmitOnError": false
+  },
+  "include": [
+    "typings/**/*.d.ts",
+    "src/**/*.ts",
+    "tools/**/*.ts",
+    "test/**/*.ts",
+    "property-based-tests/**/*",
+    "integration-tests/**/*"
+  ],
+  "compileOnSave": true
+}
