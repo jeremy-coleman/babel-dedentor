@@ -1,6 +1,6 @@
 {
   "name": "babel-dedentor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   "files": [
     "lib"
   ],
-  "author": "Alex",
+  "author": "proteria",
   "license": "MIT",
   "dependencies": {
     "lodash": "^4.17.20",

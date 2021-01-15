@@ -1,8 +1,14 @@
 import type { PluginObj, PluginItem, PluginPass, PluginOptions } from "@babel/core"
 import type * as babelTypes from "@babel/types"
-import type { Expression, TemplateElement } from "@babel/types"
+import type { Expression, TemplateElement, Identifier } from "@babel/types"
 import invariant from "tiny-invariant"
 import { last } from "lodash"
+
+/** Helper function to check whether an identifier matches a given name. */
+type IdentifierCheckHelper = (
+  expression: Expression,
+  name: string
+) => expression is Identifier
 
 type DedentPluginOptions = {
   /** Default is `dedent` */
@@ -16,10 +22,17 @@ type DedentPluginOptions = {
 
   /**
    * Custom predicate function to indicate whether a function call should be dedented.
-   * `expression` is `CallExpression.callee`. The presence of this function nullifies
+   * The presence of this function nullifies
    * the `tagName` field.
+   * @param callee `CallExpression.callee` or `TaggedTemplateExpression.tag`
+   * @param t `@babel/types` helper module
+   * @param matchIdentifier Helper function to check whether an identifier matches a given name.
    */
-  shouldDedent?(expression: Expression, t: typeof babelTypes): boolean
+  shouldDedent?(
+    callee: Expression,
+    t: typeof babelTypes,
+    matchIdentifier: IdentifierCheckHelper
+  ): boolean
 }
 
 export function useDedentPlugin(options: DedentPluginOptions): PluginItem {
@@ -31,15 +44,17 @@ export default function pluginDedent(babel: {
 }): PluginObj<PluginPass & { opts: PluginOptions & DedentPluginOptions }> {
   const t = babel.types
 
+  const identifierChecker: IdentifierCheckHelper = (callee, name): callee is Identifier =>
+    t.isIdentifier(callee, { name })
+
   return {
     visitor: {
       CallExpression(path, { opts }) {
         const { node } = path
-
         if (
           opts.shouldDedent
-            ? opts.shouldDedent(node.callee as Expression, t)
-            : t.isIdentifier(node.callee, { name: opts.tagName ?? "dedent" })
+            ? opts.shouldDedent(node.callee as Expression, t, identifierChecker)
+            : identifierChecker(node.callee as Expression, opts.tagName ?? "dedent")
         ) {
           const [arg] = node.arguments
           if (t.isTemplateLiteral(arg)) {
@@ -54,7 +69,11 @@ export default function pluginDedent(babel: {
       TaggedTemplateExpression(path, { opts }) {
         const { node } = path
 
-        if (t.isIdentifier(node.tag, { name: opts.tagName ?? "dedent" })) {
+        if (
+          opts.shouldDedent
+            ? opts.shouldDedent(node.tag, t, identifierChecker)
+            : identifierChecker(node.tag, opts.tagName ?? "dedent")
+        ) {
           transform(node.quasi.quasis, opts)
           if (!opts.keepFunctionCall) path.replaceWith(node.quasi)
         }
