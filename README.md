@@ -1,20 +1,20 @@
-# babel-dedenter
+# babel-dedentor
 
-[https://github.com/MartinKolarik/babel-plugin-dedent](babel-plugin-dedent) with more configuration.
+[babel-plugin-dedent](https://github.com/MartinKolarik/babel-plugin-dedent) with more configuration.
 
 ## Install
 
 ```sh
-yarn add --save-dev babel-dedenter
+yarn add --save-dev babel-dedentor
 ```
 
 In your `babel.config.json`:
 
-```json
+```js
 {
   "plugins": [
     [
-      "babel-dedenter",
+      "babel-dedentor",
       {
         // Showing default configuration, all of the following fields are optional
         "tagName": "dedent",
@@ -31,7 +31,7 @@ In your `babel.config.json`:
 Prefer type safe Babel configuration? Try the following:
 
 ```js
-import { useDedentPlugin } from "babel-dedenter"
+import { useDedentPlugin } from "babel-dedentor"
 
 export default {
   plugins: [
@@ -107,6 +107,7 @@ expect(
 ## License
 
 Copyright (c) 2020 ~proteria.
+
 Copyright (c) 2015 - 2020 Martin Kolárik.
 
 Released under the MIT license.

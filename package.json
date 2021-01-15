@@ -1,5 +1,5 @@
 {
-  "name": "babel-dedenter",
+  "name": "babel-dedentor",
   "version": "0.1.0",
   "description": "",
   "main": "lib/index.js",
