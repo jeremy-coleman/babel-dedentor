@@ -1,5 +1,6 @@
 import type { PluginObj, PluginItem, PluginPass, PluginOptions } from "@babel/core"
-import type { TemplateElement } from "@babel/types"
+import type * as babelTypes from "@babel/types"
+import type { Expression, TemplateElement } from "@babel/types"
 import invariant from "tiny-invariant"
 import { last } from "lodash"
 
@@ -12,6 +13,13 @@ type DedentPluginOptions = {
   trimLeft?: boolean
   /** Default is true */
   trimRight?: boolean
+
+  /**
+   * Custom predicate function to indicate whether a function call should be dedented.
+   * `expression` is `CallExpression.callee`. The presence of this function nullifies
+   * the `tagName` field.
+   */
+  shouldDedent?(expression: Expression, t: typeof babelTypes): boolean
 }
 
 export function useDedentPlugin(options: DedentPluginOptions): PluginItem {
@@ -19,7 +27,7 @@ export function useDedentPlugin(options: DedentPluginOptions): PluginItem {
 }
 
 export default function pluginDedent(babel: {
-  types: typeof import("@babel/types")
+  types: typeof babelTypes
 }): PluginObj<PluginPass & { opts: PluginOptions & DedentPluginOptions }> {
   const t = babel.types
 
@@ -28,7 +36,11 @@ export default function pluginDedent(babel: {
       CallExpression(path, { opts }) {
         const { node } = path
 
-        if (t.isIdentifier(node.callee, { name: opts.tagName ?? "dedent" })) {
+        if (
+          opts.shouldDedent
+            ? opts.shouldDedent(node.callee as Expression, t)
+            : t.isIdentifier(node.callee, { name: opts.tagName ?? "dedent" })
+        ) {
           const [arg] = node.arguments
           if (t.isTemplateLiteral(arg)) {
             transform(arg.quasis, opts)
