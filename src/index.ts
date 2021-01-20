@@ -5,6 +5,7 @@ import invariant from "tiny-invariant"
 import { last } from "lodash"
 
 const { name } = require("../package.json")
+const babelID = `module:${name}`
 
 const ensureArray = <T>(value?: T | null): T[] =>
   Array.isArray(value) ? value : value == null ? [] : [value]
@@ -44,8 +45,8 @@ export function useDedentPlugin(
   options: string | string[] | DedentPluginOptions
 ): PluginItem {
   return Array.isArray(options) || typeof options === "string"
-    ? [name, { tagName: options }]
-    : [name, options]
+    ? [babelID, { tagName: options }]
+    : [babelID, options]
 }
 
 export default function pluginDedent(babel: {
