@@ -4,6 +4,11 @@ import type { Expression, TemplateElement, Identifier } from "@babel/types"
 import invariant from "tiny-invariant"
 import { last } from "lodash"
 
+const { name } = require("../package.json")
+
+const ensureArray = <T>(value?: T | null): T[] =>
+  Array.isArray(value) ? value : value == null ? [] : [value]
+
 /** Helper function to check whether an identifier matches a given name. */
 type IdentifierCheckHelper = (
   expression: Expression,
@@ -12,9 +17,9 @@ type IdentifierCheckHelper = (
 
 type DedentPluginOptions = {
   /** Default is `dedent` */
-  tagName: string
+  tagName: string | string[]
   /** Default is false */
-  keepFunctionCall: boolean
+  keepFunctionCall?: boolean
   /** Default is true */
   trimLeft?: boolean
   /** Default is true */
@@ -35,8 +40,12 @@ type DedentPluginOptions = {
   ): boolean
 }
 
-export function useDedentPlugin(options: DedentPluginOptions): PluginItem {
-  return [pluginDedent, options]
+export function useDedentPlugin(
+  options: string | string[] | DedentPluginOptions
+): PluginItem {
+  return Array.isArray(options) || typeof options === "string"
+    ? [name, { tagName: options }]
+    : [name, options]
 }
 
 export default function pluginDedent(babel: {
@@ -54,7 +63,8 @@ export default function pluginDedent(babel: {
         if (
           opts.shouldDedent
             ? opts.shouldDedent(node.callee as Expression, t, identifierChecker)
-            : identifierChecker(node.callee as Expression, opts.tagName ?? "dedent")
+            : t.isIdentifier(node.callee) &&
+              ensureArray(opts.tagName).includes(node.callee.name)
         ) {
           const [arg] = node.arguments
           if (t.isTemplateLiteral(arg)) {
@@ -72,7 +82,8 @@ export default function pluginDedent(babel: {
         if (
           opts.shouldDedent
             ? opts.shouldDedent(node.tag, t, identifierChecker)
-            : identifierChecker(node.tag, opts.tagName ?? "dedent")
+            : t.isIdentifier(node.tag) &&
+              ensureArray(opts.tagName).includes(node.tag.name)
         ) {
           transform(node.quasi.quasis, opts)
           if (!opts.keepFunctionCall) path.replaceWith(node.quasi)

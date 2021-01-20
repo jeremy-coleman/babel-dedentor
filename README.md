@@ -35,6 +35,7 @@ import { useDedentPlugin } from "babel-dedentor"
 
 export default {
   plugins: [
+    useDedentPlugin(["dedent", "html"]),
     useDedentPlugin({
       tagName: "dedent",
       keepFunctionCall: false,
